@@ -1,0 +1,4 @@
+# option3_perception_actuation/pyproject.toml
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

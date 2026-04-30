@@ -14,6 +14,11 @@ Example commit message:
 feat (task 3.1): Add domain related concepts to RESEARCH_LOG.md
 ```
 
+## Coding Principles
+
+- Adhere to SOLID principles
+- Keep it simple
+
 ## Python Naming
 
 ### Directories and Packages
@@ -58,3 +63,9 @@ feat (task 3.1): Add domain related concepts to RESEARCH_LOG.md
 ### Data Fields (Payloads, DTOs, etc.)
 
 - Keep domain abbreviations from the brief (`eid`, `Mw`, `lat`, `vs`, `soilsat`) at data boundaries, expand inside business logic if clearer.
+
+## Documentation and Comments
+
+- Docstrings should be minimal
+- Avoid nouns (tech dependency), hardcoded values and variable names in all docstrings or comments, all namings should be codes unless necessary for readability
+- Only comment when code is not self-explainatory or can be amiguous or difficult to understand

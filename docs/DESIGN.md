@@ -47,7 +47,6 @@ In this section we move from what is given in the problem to the actual design d
 1. Configuration (startup):
    - value of 'm'
    - external services (API) list (id + url)
-   - path of seismic event schema (loaded on startup)
    - (optional, operative) timeouts, max retries, etc. 
 2. Triggers (runtime) 
    - Internal timer to fire polling
@@ -112,7 +111,8 @@ In this section we move from what is given in the problem to the actual design d
 **Agency API**
 - [x] What enpoints could it potentially have?
   - `get_recent_events`: to get a list of events in a timewindow (e.g. `?since=<timestamp>`) -> returns JSON payload with list of objects of type seismic event
-  - `get_event_by_eid` to get an event by its event ID (`eid`) -> returns JSON payload with seismic event signature/schema
+  - `get_health_status`: to query for availability
+  - (Optional, and will not do for now until it is clearly needed) `get_event_by_eid` to get an event by its event ID (`eid`) -> returns JSON payload with seismic event signature/schema
 - [x] How to ask for the data from LISTENER? -> each pull queries a fixed lookback window wider than m, overlap is harmless thanks to dedup.
 
 **Deduplication**

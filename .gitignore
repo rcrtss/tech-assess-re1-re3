@@ -60,3 +60,6 @@ docs/generated/
 # Log files
 logs/
 *.log
+
+# Config related
+config.yaml

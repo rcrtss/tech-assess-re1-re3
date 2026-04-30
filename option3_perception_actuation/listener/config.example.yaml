@@ -1,0 +1,22 @@
+listener:
+  pull_now_endpoint:
+    host: "host_ip_or_name"
+    port: port_number
+
+  poll_interval_minutes: 1
+  lookback_window_minutes: 5
+  liveness_threshold_minutes: 10
+
+  timeout_seconds: 5
+  max_retries: 3
+  health_probe_interval_seconds: 10
+
+  storage_path: "./data/listener.db"
+
+  primary_service:
+    name: "Agency A"
+    url: "actual_primary_service_url"
+
+  secondary_service:
+    name: "Agency B"
+    url: "actual_secondary_service_url"
