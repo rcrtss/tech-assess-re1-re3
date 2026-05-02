@@ -26,5 +26,3 @@ class ServerSeismicEvent(BaseModel):
         if v.tzinfo is None:
             raise ValueError("timestamp must be timezone-aware (UTC)")
         return v.astimezone(timezone.utc)
-    
-    
