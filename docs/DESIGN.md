@@ -12,6 +12,14 @@ This combination:
 - Covers four of the agent's functional modules (PERCEPTION, BELIEF, RAP, and ACTUATION)
 - Best aligns with personal interests and past experience
 
+**Updated Scope**:
+
+This submission covers Option 2 (both tasks) and Option 3 Task 1 (LISTENER). 
+
+Option 3 Task 2 (multi-tenant orchestrator) was evaluated and removed from the scoped to allow time for focusing on Option 2. 
+
+A high-level idea on how I would have continued with the the orchestrator is sketched in this document, but not implemented.
+
 ## Option 3. Simple Reasoning and Actuation
 
 ![Option 3. Simplified Diagram](../docs/diagrams/tasks_3_1_and_3_2.excalidraw.svg)
@@ -137,3 +145,30 @@ TODO:day3: finish test cases list
 - event-driven notification system for anomalies (complementary to logs) -> would be a good feature but are out of scope
 - use of sqlite3 and not using an ORM creates a potential risk for future migration and refactoring, but we accept this to gain simplicity for this assessment
 - to tag event ID as not persisted. when startup, fetch that list to ask service by ID
+
+### Task 3.2. Multi-tenant pipeline for reasoning and actuation
+
+This task was removed from the scope of the implementation. A high-level sketch of the intended approach is shown below:
+
+**Architecture**
+
+FastAPI orchestrator with a single `POST /run` endpoint, accepting a `tenant_id` header and a payload describing the action. A `Router` inspects the payload and routes to one of two pipelines asynchronously. For consistency and simplicity, it would match the LISTENER's concurrency model.
+
+**Two pipelines**
+
+1. **LISTENER pull-now**: triggers an immediate pull via LISTENER's "pull-now" endpoint and returns the events.
+2. **Arithmetic service**: separate python process that consists of a service that calculates predefined math operations with floting point values of arbitrary precision, with stdout returned to the orchestrator. Process chaining: pipeline (1)'s output can feed pipeline (2).
+
+**Multi-tenancy and timing**
+
+`tenant_id` is carried through the call stack and tagged on logs and storage. Per-tenant rate limiting gates access to the LISTENER pull pipeline. Each response exposes `execution_time_ms` (CPU work) and `wall_clock_ms` (total elapsed). When comparing these two, we would test and verify that the backend is functioning correctly in a.
+
+For storage, I would use a shared database for the demo as it is simpler, for all tenants. This would be noted as technical debt for the case where certain tenants need their own database.
+
+**Error handling**
+
+- *Subprocess timeouts* The arithmetic service can hang or take too long. The orchestrator enforces a deadline for each call. If expired, it kills the subprocess, logs the event, and returns a `timeout` error to the caller.
+- *Downstream unavailability* The LISTENER pull pipeline depends on LISTENER being reachable. If it isn't, the orchestrator does not retry indefinitely. Instead it returns a `downstream_unavailable` error so the tenant gets the detail of the error instead of a hanging request.
+- *Wrong input* Requests that don't match the expected schema are rejected as fail fast (Pydantic validation) with a `bad_request` error, before any pipeline is invoked.
+
+In all three cases, the orchestrator returns with a structured error response and saves the failure context in logs for debugging.
