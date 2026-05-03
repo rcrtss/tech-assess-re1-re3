@@ -91,7 +91,7 @@ In this section we move from what is given in the problem to the actual design d
 
 **Logging**
 - [x] How to log? -> Shared log system for consistency, log writing practices documented in DEVS.md to avoid "over-logging" and keep consistency.
-- [ ] 
+- [x] Where to log? -> For now, simply log in console. Log configuration is out of the scope of this demo.
 
 **Data Validation**
 - [x] Pydantic vs JSON schema for data validation (when respond recieved from agencies)? -> The seismic event contract is defined as a Pydantic model (SeismicEvent), which serves as the single source of truth for validation, type-safe domain objects.
@@ -116,10 +116,13 @@ In this section we move from what is given in the problem to the actual design d
 - [x] How to ask for the data from LISTENER? -> each pull queries a fixed lookback window wider than m, overlap is harmless thanks to dedup.
 
 **Deduplication**
-- [x] How to avoid duplicationm? -> Use `eid` to differentiate events and avoid duplication.
+- [x] How to avoid duplication? -> Use `eid` to differentiate events and avoid duplication.
 
 **Mitigate Concurrency Risks**
 - [x] How to deal with asynchronicity and deduplication from multi-tenant calling orchestration at same time? -> asyncio.Lock for short-circuit, SQLite UNIQUE constraint on eid with INSERT OR IGNORE for persistence-level idempotency.
+
+**Demo Design**
+- [x] How to show functionality? -> Makefile starts the demo from a single entry point, where the agencies and the listener are spun, and in terminal we can see logs. On another terminal we can control agencies by intrudcing specific targets to the makefile to stop and run each of the agencies independently for demo purposes (`stop_agency_a`, `start_agency_a`, `stop_agency_b`, `start_agency_b`). This will help show during the demo the fallback functionality. For visualization, when agency switch events and recovery events happen, log at INFO with a recognizable marker (e.g. `agency switch: A -> B`, `agency recovered: A`)
 
 #### Tests 3.1
 

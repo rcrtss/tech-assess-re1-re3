@@ -69,3 +69,4 @@ feat (task 3.1): Add domain related concepts to RESEARCH_LOG.md
 - Docstrings should be minimal
 - Avoid nouns (tech dependency), hardcoded values and variable names in all docstrings or comments, all namings should be codes unless necessary for readability
 - Only comment when code is not self-explainatory or can be amiguous or difficult to understand
+- Comments should not be inline, instead above the commented code

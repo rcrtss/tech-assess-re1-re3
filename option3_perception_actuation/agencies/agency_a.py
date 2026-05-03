@@ -8,7 +8,7 @@ Endpoints:
 """
 from fastapi import FastAPI
 from datetime import datetime
-from agencies.event_data import EVENTS
+from agencies.event_data import get_available_events
 from agencies.models import ServerSeismicEvent
 import asyncio
 
@@ -26,7 +26,8 @@ async def get_events(since: datetime | None = None):
     await asyncio.sleep(SIMULATED_DELAY)
     if since is not None and since.tzinfo is None:
         raise ValueError("invalid timestamp: should be localized (UTC)")
-    return [e for e in EVENTS if since is None or e.timestamp > since]
+    events = get_available_events()
+    return [e for e in events if since is None or e.timestamp > since]
 
 @app.get("/health")
 async def health():
