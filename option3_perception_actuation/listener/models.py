@@ -1,10 +1,10 @@
 from datetime import datetime, timezone
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-class ServerSeismicEvent(BaseModel):
+class ClientSeismicEvent(BaseModel):
     """
     Represents a seismic event reported by the server. In this case the model is exactly the same as
-    the listener's ClientSeismicEvent, but in a real application these naturally could differ. Each
+    the agent's ServerSeismicEvent, but in a real application these naturally could differ. Each
     service owns its own data models even if they should match for correct operation.
     """
     model_config = ConfigDict(frozen=True, extra="forbid")

@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from listener.models import ServerSeismicEvent
+from agencies.models import ServerSeismicEvent
 
 NOW = datetime.now(timezone.utc)
 
