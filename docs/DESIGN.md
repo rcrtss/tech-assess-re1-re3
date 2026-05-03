@@ -79,7 +79,7 @@ In this section we move from what is given in the problem to the actual design d
 
 **Storage and State**
 - DB write failure -> log warning and retry, log anomaly (error) if still failing
-- restart or stop while pulling and event not persisted -> tag event ID as not persisted. when startup, fetch that list to ask service by ID
+- restart or stop while pulling and event not persisted -> mostly handled by lookback window, if restart or stop, the next pull will take previous events. A more robust was considered and left out of scope for the demo, it was added to technical debt.
 
 **Asynchronicity and Concurrency**
 - LISTENER serves two trigger sources: an internal timer (every `m` minutes) and a "pull now" endpoint callable by the orchestrator on behalf of multiple tenants. Concurrent triggers risk redundant agency calls and duplicate inserts. -> mitigated by short-circuit when pull in progress AND idempotency (e.g., `INSERT OR IGNORE ON eid`)
@@ -91,6 +91,7 @@ In this section we move from what is given in the problem to the actual design d
 
 **Logging**
 - [x] How to log? -> Shared log system for consistency, log writing practices documented in DEVS.md to avoid "over-logging" and keep consistency.
+- [ ] 
 
 **Data Validation**
 - [x] Pydantic vs JSON schema for data validation (when respond recieved from agencies)? -> The seismic event contract is defined as a Pydantic model (SeismicEvent), which serves as the single source of truth for validation, type-safe domain objects.
@@ -110,9 +111,8 @@ In this section we move from what is given in the problem to the actual design d
 
 **Agency API**
 - [x] What enpoints could it potentially have?
-  - `get_recent_events`: to get a list of events in a timewindow (e.g. `?since=<timestamp>`) -> returns JSON payload with list of objects of type seismic event
-  - `get_health_status`: to query for availability
-  - (Optional, and will not do for now until it is clearly needed) `get_event_by_eid` to get an event by its event ID (`eid`) -> returns JSON payload with seismic event signature/schema
+  - `GET /events?since=<timestamp>`: to get a list of events in a timewindow (e.g. `?since=<timestamp>`) -> returns JSON payload with list of objects of type seismic event
+  - `GET /health`: to query for availability
 - [x] How to ask for the data from LISTENER? -> each pull queries a fixed lookback window wider than m, overlap is harmless thanks to dedup.
 
 **Deduplication**
@@ -133,3 +133,4 @@ TODO:day3: finish test cases list
 - health check of service (e.g., heartbeat) -> not core functionality, always a good practice for service orchestration but out of scope
 - event-driven notification system for anomalies (complementary to logs) -> would be a good feature but are out of scope
 - use of sqlite3 and not using an ORM creates a potential risk for future migration and refactoring, but we accept this to gain simplicity for this assessment
+- to tag event ID as not persisted. when startup, fetch that list to ask service by ID
