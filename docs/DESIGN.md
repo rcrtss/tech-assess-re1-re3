@@ -20,9 +20,82 @@ Option 3 Task 2 (multi-tenant orchestrator) was evaluated and removed from the s
 
 A high-level idea on how I would have continued with the the orchestrator is sketched in this document, but not implemented.
 
+---
+
+## Option 2. Belief state (conceptual design and implementation choices)
+
+### Context and scope
+
+The two tasks for the BELIEF module (option 2) consist in (1) choosing a way to represent belief, and (2) an update mechanism for such beliefs.
+
+My submission for this specific exercise is scoped as follows (done in sequential order):
+
+- The identification and definition of the [core design principles](../option2_belief/DESIGN_PRINCIPLES.md) to build this solution around.
+- [A critique/code review](../option2_belief/APPENDIX_CRITIQUE.md) of the code in the appendix of the [pdf assessment file](../docs/assessment/20260428_candidates-tech-assess_re1-re3.pdf) (also located at [this jupyter file](../docs/assessment/20260428_candidates-tech-assess.ipynb)).
+- The documentation of [design choices](#tasks-21-and-22-design-choices) for an alternative, more appropriate implementation of the BELIEF module, which includes what was left out of the design and code example and why.
+- An (non exhaustive) [example implementation](../option2_belief/alternative-implementation.ipynb) of such design choices in a jupyter notebook to provide a general idea of what I propose.
+
+### Tasks 2.1 and 2.2 Design Choices
+
+This section aims to define the core design choices with their corresponding justification.
+The [DESIGN_PRINCIPLES.md](../option2_belief/DESIGN_PRINCIPLES.md) file is complementary to this section and the decisions build around such principles and the insights obtained during the [code review](../option2_belief/APPENDIX_CRITIQUE.md) of the original proposed [notebook](../docs/assessment/20260428_candidates-tech-assess.ipynb).
+
+#### Classes and Abstractions
+
+From **Principles 1, 2 and 3**:
+
+- Introduce a `BeliefRepresentation` interface, exposing:
+  - `mean() -> float`
+  - `variance() -> float`
+  - `distribution_family() -> str`: e.g. "gaussian", "gamma", "log-normal". The updater needs this to pick the right math.
+> Immutable. Updated beliefs are new instances.
+
+- Introduce a `VsIndex` pydantic object addressing a single cell in the grid:
+  - `lat: float` (validation for [-90.0, +90.0])
+  - `lon: float` (validation for [-180.0, +180.0])
+  - `depth: float` (validation for [-10.0, 0.0])
+  - `soilsat: float` (validation for [0.0, 1.0])
+> soilsat is treated as an index dimension here, noted as technical debt.
+
+- Introduce a `VsMeasurement` pydantic object:
+  - `index: VsIndex`
+  - `vs: float` (validation for [0.0, 5.0])
+  - `sigma: float`: 1-sigma measurement uncertainty in km/s (validation for > 0)
+  - `timestamp: datetime` (UTC)
+> A measurement is an observation event, not a belief.
+
+- Introduce an `UpdateMechanism` interface, exposing:
+  - `apply(prior: BeliefRepresentation, evidence: VsMeasurement) -> BeliefRepresentation`: pure function, returns a new belief.
+> Toy implements `PrecisionWeightedGaussianUpdate`. Other update mechanisms (Kalman step, log-normal conjugate update, particle filter step) fit the same signature.
+
+#### Concrete Implementations Chosen for the Toy Example
+
+The toy in [the alternative notebook](../option2_belief/alternative-implementation.ipynb) implements `GaussianBelief` as the only `BeliefRepresentation`, and `PrecisionWeightedGaussianUpdate` as the only `UpdateMechanism`. 
+
+Both are chosen because they are the simplest pair that exercises every Protocol method and demonstrates a real Bayesian update. The goal of the toy example is to show an improved pattern for swapping both the representation and update mechanism. For further work, to improve the belief, evaluating the update mechanisms by computing losses would shed some light on what would be the best update mechanism. Naturally, a more sophisticated implementation (such as a kalman filter) would potentially work better, but without evaluation it is difficult to justify such approaches.
+
+#### Store and Concurrency
+
+Introduyce a separate `BeliefStore` class that owns persistence and locking. Its responsibility is: 
+
+- given a region of the grid, return the current belief at that region, accept a new belief to commit back, and ensure no two writers mutate the same region concurrently. 
+
+The lock unit and the storage unit are the same: one chunk per region. so two users updating disjoint regions never fight for the same data. This also allows for multi-user execution. The constraint moves to accessing the same chunk at once. When that happens, 
+
+### What I Left Out of Scope for this Submission and Why
+
+- soilsat as a belief. Treating it as an index dimension here. Extension: replace `VsIndex.soilsat: float` with a `BeliefRepresentation`, marginalize at lookup.
+- Independent updates for each cell is the simplest and appropriate model for this excercise. Modeling dependencies (`rain -> soilsat -> Vs`) as a Probabilistic Graphical Model and propagating updates along the graph would improve the uncertainty treatment (local updates would still use the same `UpdateMechanism` interface)
+- Full Zarr backend. Toy uses an in-memory dict. Extension: swap `InMemoryBeliefStore` for `ZarrBeliefStore`, without changing the protocol.
+- GPU leverage is left out of scope, but could be useful to improve efficiency through batch updates.
+- Learning the `soilsat -> Vs` dependency from data. Requires data we don't have, but could be useful for a more accurate model. We would still depend on evaluation for justification.
+- Multi-tenancy. One store per tenant or shared store partitioned by prefix. both fit the existing Protocol.
+
+---
+
 ## Option 3. Simple Reasoning and Actuation
 
-![Option 3. Simplified Diagram](../docs/diagrams/tasks_3_1_and_3_2.excalidraw.svg)
+![Option 3. Simplified Diagram](../docs/assets/tasks_3_1_and_3_2.excalidraw.svg)
 
 ### Task 3.1. LISTENER: Event Ingestion Module
 
@@ -95,49 +168,42 @@ In this section we move from what is given in the problem to the actual design d
 ##### Architecture Decisions 3.1
 
 **Configuration**
-- [x] Configurable to what extent? -> As simple as possible. Pydantic validation. YAML for configuration for readability.
+- Configurable to what extent? -> As simple as possible. Pydantic validation. YAML for configuration for readability.
 
 **Logging**
-- [x] How to log? -> Shared log system for consistency, log writing practices documented in DEVS.md to avoid "over-logging" and keep consistency.
-- [x] Where to log? -> For now, simply log in console. Log configuration is out of the scope of this demo.
+- How to log? -> Shared log system for consistency, log writing practices documented in DEVS.md to avoid "over-logging" and keep consistency.
+- Where to log? -> For now, simply log in console. Log configuration is out of the scope of this demo.
 
 **Data Validation**
-- [x] Pydantic vs JSON schema for data validation (when respond recieved from agencies)? -> The seismic event contract is defined as a Pydantic model (SeismicEvent), which serves as the single source of truth for validation, type-safe domain objects.
+- Pydantic vs JSON schema for data validation (when respond recieved from agencies)? -> The seismic event contract is defined as a Pydantic model (SeismicEvent), which serves as the single source of truth for validation, type-safe domain objects.
 
 **Persistance**
-- [x] Use ORM or not? -> avoid using it. it could help for future portability, but we loose siplicity. notes as technical debt.
-- [x] Which database to use? -> SQLite, since we start simple, we stick with light tool that runs locally and has low setup cost
+- Use ORM or not? -> avoid using it. it could help for future portability, but we loose siplicity. notes as technical debt.
+- Which database to use? -> SQLite, since we start simple, we stick with light tool that runs locally and has low setup cost
 
 **Host Agency Services**
-- [x] How and where to host Agency services? -> standalone with FastAPI running on separate ports (8001 and 8002), reachable through REST locally.
+- How and where to host Agency services? -> standalone with FastAPI running on separate ports (8001 and 8002), reachable through REST locally.
 
 **Agency Switching**
-- [x] What are the rules for switching?
+- What are the rules for switching?
   - if agency A unavailable, switch to Agency B
   - periodically send checks to Agency A to test availability
   - when A available again, recover
 
 **Agency API**
-- [x] What enpoints could it potentially have?
+- What enpoints could it potentially have?
   - `GET /events?since=<timestamp>`: to get a list of events in a timewindow (e.g. `?since=<timestamp>`) -> returns JSON payload with list of objects of type seismic event
   - `GET /health`: to query for availability
-- [x] How to ask for the data from LISTENER? -> each pull queries a fixed lookback window wider than m, overlap is harmless thanks to dedup.
+- How to ask for the data from LISTENER? -> each pull queries a fixed lookback window wider than m, overlap is harmless thanks to dedup.
 
 **Deduplication**
-- [x] How to avoid duplication? -> Use `eid` to differentiate events and avoid duplication.
+- How to avoid duplication? -> Use `eid` to differentiate events and avoid duplication.
 
 **Mitigate Concurrency Risks**
-- [x] How to deal with asynchronicity and deduplication from multi-tenant calling orchestration at same time? -> asyncio.Lock for short-circuit, SQLite UNIQUE constraint on eid with INSERT OR IGNORE for persistence-level idempotency.
+- How to deal with asynchronicity and deduplication from multi-tenant calling orchestration at same time? -> asyncio.Lock for short-circuit, SQLite UNIQUE constraint on eid with INSERT OR IGNORE for persistence-level idempotency.
 
 **Demo Design**
-- [x] How to show functionality? -> Makefile starts the demo from a single entry point, where the agencies and the listener are spun, and in terminal we can see logs. On another terminal we can control agencies by intrudcing specific targets to the makefile to stop and run each of the agencies independently for demo purposes (`stop_agency_a`, `start_agency_a`, `stop_agency_b`, `start_agency_b`). This will help show during the demo the fallback functionality. For visualization, when agency switch events and recovery events happen, log at INFO with a recognizable marker (e.g. `agency switch: A -> B`, `agency recovered: A`)
-
-#### Tests 3.1
-
-**Polling**
-- [] external triggering should NOT break internal timer fire polling
-
-TODO:day3: finish test cases list
+- How to show functionality? -> Makefile starts the demo from a single entry point, where the agencies and the listener are spun, and in terminal we can see logs. On another terminal we can control agencies by intrudcing specific targets to the makefile to stop and run each of the agencies independently for demo purposes (`stop_agency_a`, `start_agency_a`, `stop_agency_b`, `start_agency_b`). This will help show during the demo the fallback functionality. For visualization, when agency switch events and recovery events happen, log at INFO with a recognizable marker (e.g. `agency switch: A -> B`, `agency recovered: A`)
 
 #### Technical Debt / Future Work 3.1
 
