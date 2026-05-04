@@ -16,7 +16,6 @@ It contains two sections with complementary information. Reading both is not req
 
 (Items: 3, 15, 16, 17, 18)
 
-
 ### 2. Representation (P2)
 
 - The current representation of uncertainty involves "measurement" rows in a Pandas dataframe, where one column represents the S-wave velocity `vs` and other column a so-called `vs_uncertainty`. The latter variable is not just not documented, but it most certainly does not represent uncertainty in reasonable way. A random variable is best represented with a probability distribution type and enough statistical parameters, concepts which are well documented in the literature and more appropriate for this task.
@@ -73,8 +72,8 @@ It contains two sections with complementary information. Reading both is not req
 12) l.98 -> sequential update for a huge space can be bad idea, instead we should think if it can be a parellelizable process
 13) l.108 -> the line passes empty 'belif' ({}), it would never update
 14) l.28 -> this get would require exact matches, and would hardly match. instead, the space should be a discretized grid (with a parameter in config for how), or something else, but not exact field to field matches
-15) . There is no error handling at all
-16) . There is no logging at all
-17) . There is no type safety (however possible in python)
-18) . There are unsused classes and functions
-19) . The actual division and selection of classes does not have a logical pattern.
+15) There is no error handling at all
+16) There is no logging at all
+17) There is no type safety (however possible in python)
+18) There are unsused classes and functions
+19) The actual division and selection of classes does not have a logical pattern.

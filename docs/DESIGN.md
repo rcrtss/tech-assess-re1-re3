@@ -82,6 +82,8 @@ Introduyce a separate `BeliefStore` class that owns persistence and locking. Its
 
 The lock unit and the storage unit are the same: one chunk per region. so two users updating disjoint regions never fight for the same data. This also allows for multi-user execution. The constraint moves to accessing the same chunk at once. When that happens, 
 
+The store maps continuous `VsIndex` values to a discrete grid using rounding values to a defined step size for each dimension. Step sizes are constructor parameters (defaults: 0.1° for lat/lon, 0.5 for depth, 0.1 for soilsat). The grid cell is the unit of storage and the unit of locking.
+
 ### What I Left Out of Scope for this Submission and Why
 
 - soilsat as a belief. Treating it as an index dimension here. Extension: replace `VsIndex.soilsat: float` with a `BeliefRepresentation`, marginalize at lookup.
@@ -90,6 +92,8 @@ The lock unit and the storage unit are the same: one chunk per region. so two us
 - GPU leverage is left out of scope, but could be useful to improve efficiency through batch updates.
 - Learning the `soilsat -> Vs` dependency from data. Requires data we don't have, but could be useful for a more accurate model. We would still depend on evaluation for justification.
 - Multi-tenancy. One store per tenant or shared store partitioned by prefix. both fit the existing Protocol.
+- round(value / step) is the simplest snap-to-grid for Discretization Scheme for store keys. Other alternatives should be researched for future work, but for the sake of the toy example, the interface uses uniform rounding for clarity.
+
 
 ---
 
