@@ -66,7 +66,7 @@ From **Principles 1, 2 and 3**:
 
 - Introduce an `UpdateMechanism` interface, exposing:
   - `apply(prior: BeliefRepresentation, evidence: VsMeasurement) -> BeliefRepresentation`: pure function, returns a new belief.
-> Toy implements `PrecisionWeightedGaussianUpdate`. Other update mechanisms (Kalman step, log-normal conjugate update, particle filter step) fit the same signature.
+> Toy implements `PrecisionWeightedGaussianUpdate` and `KalmanUpdate`. Other update mechanisms (Kalman step, log-normal conjugate update, particle filter step) fit the same signature.
 
 #### Concrete Implementations Chosen for the Toy Example
 
@@ -94,6 +94,11 @@ The store maps continuous `VsIndex` values to a discrete grid using rounding val
 - Multi-tenancy. One store per tenant or shared store partitioned by prefix. both fit the existing Protocol.
 - round(value / step) is the simplest snap-to-grid for Discretization Scheme for store keys. Other alternatives should be researched for future work, but for the sake of the toy example, the interface uses uniform rounding for clarity.
 
+### (Update/Bonus) Kalman Filter Implementation
+
+Near the end of the assessment, I was left with the idea of pluging in a Kalman Filter to replace the Gaussian Updater. This, as far as I understand, is a good fit for a parallel computation since in its core it performsn matrix multiplication, and it is also considered a standard for dealing with sensor data in uncertain environments.
+
+I wrote [this prompt](../docs/ai_logs/PROMPT-05-05-interfaces.md) to refactor the code since it originally and unnecessarily forced the interface to return mean and variance as `float`, and the kalman filter required a vector for storing means and a covariance matrix. The idea was to improve modularity and to test how a kalman filter implementation would look like. That part of the implementation (commit 581b1f6...) was done by Claude Sonnet 4.6 following such prompt. The conversation can be found in [here](../docs/ai_logs/05-05-refactor.md).
 
 ---
 
@@ -215,6 +220,19 @@ In this section we move from what is given in the problem to the actual design d
 - event-driven notification system for anomalies (complementary to logs) -> would be a good feature but are out of scope
 - use of sqlite3 and not using an ORM creates a potential risk for future migration and refactoring, but we accept this to gain simplicity for this assessment
 - to tag event ID as not persisted. when startup, fetch that list to ask service by ID
+
+#### Evidence of Running Demo for Task 3.1
+
+The demo [(see README to run)](../README.md/#run) was tested locally in a Windows 11 machine using WSL2 with Ubuntu 22.04 [(read the Tools section for more information)](../README.md/#tools-and-technologies), with Makefile and python+[dependencies](../README.md/#install) installed correctly.
+
+The following images showcase these runs:
+
+![task 3.1 - 1](./assets/demo_3_1_evidence_01.png)
+
+![task 3.1 - 2](./assets/demo_3_1_evidence_02.png)
+
+![task 3.1 - 3](./assets/demo_3_1_evidence_03.png)
+
 
 ### Task 3.2. Multi-tenant pipeline for reasoning and actuation
 

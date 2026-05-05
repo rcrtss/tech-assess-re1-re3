@@ -4,9 +4,19 @@
 
 **For Positions**: AI Software Research Engineer (RE1~RE3)
 
-<!-- TODO:day6: all sections should be filled and polished -->
-
 ## TL;DR
+
+My response to the assessment partially answers Option 2 and Option 3 of the assessment, and is divided in the following parts:
+
+**Option 2: Belief State**
+- [Design for task 1 and 2](./docs/DESIGN.md/#option-2-belief-state-conceptual-design-and-implementation-choices)
+- [Code review of Appendix A](./option2_belief/APPENDIX_CRITIQUE.md)
+- [Alternative implementation (toy example)](./option2_belief/alternative_implementation.ipynb)
+
+**Option 3: Simple reasoning and actuation (task 1 only)**
+- [Design for task 1](./docs/DESIGN.md/#option-3-simple-reasoning-and-actuation)
+- [Runnable Demo for task 1](#run)
+- [Comments on how I would handle task 2](./docs/DESIGN.md/#task-32-multi-tenant-pipeline-for-reasoning-and-actuation)
 
 ## Install
 
@@ -26,7 +36,9 @@ pip install -r requirements.txt
 
 ## Run
 
-### Task 3.1
+### (Opt. 2) BELIEF Module: Tasks 1 and 2
+
+### (Opt. 3) REASON and ACTION Module: Task 1 only
 
 To run the demo of task 3.1:
 
@@ -56,7 +68,22 @@ make start_agency_b
 
 ## Design Decisions
 
+All design choices are located in the dedicated file [DESIGN.md](./docs/DESIGN.md). Please refer to it for information on the design of each part of the solution.
+
 ## Tools and Technologies
+
+- Development done in Windows 11 with WSL2 (Ubuntu 22.04)
+- Makefile + shell script for running Task 3.1 demo
+- curl 7.81.0 for interacting with Task 3.1 demo
+- yaml files for configuration (Task 3.1)
+- Python 3.10.12
+- Pyenv for version management
+- See `requirements.txt` for all libraries installed during development (I cannot guarantee that all of them are actually used, but I did start with a clean pyenv)
+- `pip` for library installation
+
+### General/Support tools
+
+- VSCode Copilot (AI for coding assistance): [see this section](#ai-usage)
 
 ## Run Tests
 
@@ -88,3 +115,4 @@ For coding, the main Large Language Models used were the following:
 - Claude Haiku 4.5 (via VSCode Copilot) -> main coding assistant for listener implementation
 - Claude Sonnet 4.6 (via VSCode Copilot) -> secondary coding assistant for listener implementation
 - GPT-5.4 (via VSCode Copilot) -> used for debugging, mainly during demo setup for listener
+- Gemini 3.1 Pro for meta-prompting (asking to create clean prompts)
