@@ -38,6 +38,8 @@ pip install -r requirements.txt
 
 ### (Opt. 2) BELIEF Module: Tasks 1 and 2
 
+Please refer to [Design for task 1 and 2](./docs/DESIGN.md/#option-2-belief-state-conceptual-design-and-implementation-choices).
+
 ### (Opt. 3) REASON and ACTION Module: Task 1 only
 
 To run the demo of task 3.1:

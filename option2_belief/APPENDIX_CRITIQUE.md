@@ -29,7 +29,7 @@ It contains two sections with complementary information. Reading both is not req
 - The `update_belief` function of the notebook does a simple arithmetic average between the new observation and the current belief. This calculation is not appropriate nor done correctly. A still inappropriate but more correct approach would be to take the average with a meaningful denominator (taking into account the exact number of updates the exact variable has undergone), instead of dividing by 2 and giving more weight to the new observations as they arrive. On the other hand, a more appropriate way to update the belief would be to use a poper artifact from probability theory, such as using bayes theorem or more sophisticated methods designed to handle probabilities in light of new evidence.
 - Additionally, the `update_belief` is called from `SequentialProcessor.process_batch` with empty `current_belief` (`{}`). This suggests that it is either a bug or unfinished.
 - Because Vs and soilsat influence each other, they are correlated. The current code treats their uncertainties as completely independent.
-- 
+
 (Items: 10, 13)
 
 ### 4. Responsibility and Modularity (P4)
