@@ -42,7 +42,52 @@ Please refer to [Design for task 1 and 2](./docs/DESIGN.md/#option-2-belief-stat
 
 ### (Opt. 3) REASON and ACTION Module: Task 1 only
 
-To run the demo of task 3.1:
+#### Config Setup
+
+You will need to have a valid `.option3_perception_actuation/listener/config.yaml` file for the demo to run correctly. To avoid pushing to the Github repository configuration files, I only left a `config.example.yaml` to show the config skelleton, but the values must be edited.
+
+The suggested steps:
+
+1. Copy the `config.example.yaml` and rename it. From root:
+
+```sh
+cd option3_perception_actuation/listener
+cp config.example.yaml config.yaml      
+```
+
+2. Replace the fields or the whole file with the  contents of the following yaml block:
+
+```yaml
+listener:
+  pull_now_endpoint:
+    host: "127.0.0.1"
+    port: 8000
+
+  # DEMO CONFIG: Values are interpreted as SECONDS (not minutes) for rapid demo execution.
+  # In production, these would be in minutes: poll_interval_minutes: 1, lookback_window_minutes: 5, etc.
+  # For demo purposes, interpreted as seconds to show fallback/recovery quickly:
+  poll_interval_minutes: 5          # Interpreted as 5 seconds (production: 1 minute)
+  lookback_window_minutes: 30       # Interpreted as 30 seconds (production: 5 minutes; must exceed poll_interval)
+  liveness_threshold_minutes: 10
+
+  timeout_seconds: 5
+  max_retries: 3
+  health_probe_interval_seconds: 3
+
+  storage_path: "./data/listener.db"
+
+  primary_service:
+    name: "Agency A"
+    url: "http://127.0.0.1:8001"
+
+  secondary_service:
+    name: "Agency B"
+    url: "http://127.0.0.1:8002"
+```
+
+#### To run the demo of task 3.1:
+
+cd to root directory of the project
 
 **Terminal 1:**
 ```sh
