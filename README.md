@@ -113,6 +113,13 @@ make stop_agency_b
 make start_agency_b
 ```
 
+**To sneek at the Database** visually, an option is to use `sqlitebrowser` while the demo is running to see during runtime how the new measurements are inserted without duplication. Assuming it is not installed, you can run the following commands (tested in Ubuntu 22.04):
+
+```sh
+sudo apt install sqlitebrowser
+sqlitebrowser option3_perception_actuation/data/listener.db
+```
+
 ## Design Decisions
 
 All design choices are located in the dedicated file [DESIGN.md](./docs/DESIGN.md). Please refer to it for information on the design of each part of the solution.
