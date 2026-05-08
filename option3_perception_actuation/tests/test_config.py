@@ -79,7 +79,7 @@ def test_load_config_from_example_yaml():
     """should load and validate config.yaml without errors."""
     import pathlib
 
-    config_path = pathlib.Path(__file__).parent / "fixtures" / "config.yaml"
+    config_path = pathlib.Path(__file__).parent / "fixtures" / "config.test.yaml"
     config = load_config(str(config_path))
     assert config.poll_interval_minutes == 1
     assert config.lookback_window_minutes == 5
